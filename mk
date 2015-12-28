@@ -220,8 +220,18 @@ let splice_file path tag s =
 let desired_artifacts =
   [".cmi"; ".cmt"; ".ml"; ".mli"; ".cma"; ".cmxa"; ".a" ]
 
-(** [rules] is a alist of name-procedure pairs. Each specifies a subcommand for
-    mk. For example, ./mk splice will call the procedure whose name is "splice". *)
+type rule_group =
+  | Destroy
+  | Build
+  | Install
+  | Generate
+  | Test
+
+(** [rules] is a alist of (name, group, procedure) tuples. Each specifies a
+    subcommand for mk. For example, ./mk splice will call the procedure whose
+    name is "splice". The [group] currently only affects [rule_all], which
+    doesn't run "destructive" rules like clean and unlib (otherwise it'd delete
+    the files it just created!) *)
 let rules =
   [(* splice autogenerates:
       - requires and archive directives in META
@@ -231,6 +241,7 @@ let rules =
       It's pointlessly tedious to have to edit three files every time you add a
       new dependency. *)
    ("splice",
+    Generate,
     (fun () ->
        let merlin = String.concat "\n" (List.map (fun s -> sprintf "PKG %s" s) dependencies) in
        let tags = "true: " ^ String.concat ", " (List.map (fun s -> sprintf "package(%s)" s) dependencies) in
@@ -249,57 +260,74 @@ let rules =
       the spliced files, beacuse it makes sense to commit those and because you
       might have your own changes. *)
    ("clean",
+    Destroy,
     (fun () ->
        ocb "-clean" ;
        chdir ".." ;
-       run (sprintf "rm -f main.native main.d.byte %s.top %s.docdir" top_name project) ;
+       run (sprintf "rm -f main.native main.d.byte %s.top %s.docdir" project project) ;
        chdir src_dir));
 
    (* byte builds main.d.byte using ocamlbuild from a src/main.ml file. *)
    ("byte",
+    Build,
     (fun () ->
        ocb "main.d.byte" ;
        install "main.d.byte"));
 
    (* opt builds main.native using ocamlbuild from a src/main.ml file. *)
    ("opt",
+    Build,
     (fun () ->
        ocb "main.native" ;
        install "main.native"));
 
-   (* top builds a custom toplevel top_name.top containing all the modules in
+   (* top builds a custom toplevel, [project].top containing all the modules in
       the project except for Main and *_test.
-      You should add a file called <project>_top.ml containing the following line:
+      You should add a file called [mcase project]_top.ml containing the
+      following line:
 
           let () = UTop_main.main ()
 
-      ... to have your top be based on UTop. *)
+      ... to have your top be based on UTop (this requires utop to be in the
+      dependencies). You should also create a file called .ocamlinit in the
+      root of the project (if that's where you're going to be running the top)
+      with the contents:
+   
+          #thread
+          #directory "src/_build"
+   
+      ... to set up the top properly. *)
    ("top",
+    Build,
     (fun () ->
-       with_module_list ~excludes:["Main"] ~dest:(sprintf "%s.mltop" top_name)
+       with_module_list ~excludes:["Main"] ~dest:(sprintf "%s.mltop" project)
          (fun () ->
-            ocb (sprintf "%s.top" top_name) ;
-            install (sprintf "%s.top" top_name)))) ;
+            ocb (sprintf "%s.top" project) ;
+            install (sprintf "%s.top" project)))) ;
 
    (* doc runs ocamldoc on all of the modules in your project except for *_test
       modules. The generated documentation is located at <project>.docdir. *)
    ("doc",
+    Build,
     (fun () ->
        with_module_list ~dest:(sprintf "%s.odocl" project)
          (fun () ->
             ocb (sprintf "%s.docdir/index.html" project) ;
             install (sprintf "%s.docdir" project))));
 
-   (* lib installs all of the modules in your project except for Main and
-      *_test modules as an ocamlfind package named [package]. *)
+   (* lib installs all of the modules in your project except for Main, *_test
+      modules, and [mcase project]_top as an ocamlfind package named [package]. *)
    ("lib",
+    Install,
     (fun () ->
        (* Remove this package if it's already installed. *)
        if has_package package then
          run (sprintf "ocamlfind remove %s" package)
        else () ;
 
-       with_module_list ~excludes:["Main"] ~dest:(sprintf "%s.mllib" project)
+       with_module_list
+         ~excludes:["Main"; mcase project ^ "_top"]
+         ~dest:(sprintf "%s.mllib" project)
          (fun () ->
             (* Bytecode. *)
             ocb (sprintf "%s.cma" project) ;
@@ -319,12 +347,14 @@ let rules =
 
    (* unlib removes the package created by lib named [package]. *)
    ("unlib",
+    Destroy,
     (fun () ->
        run (sprintf "ocamlfind remove %s" package)));
 
    (* test finds all the files named *_test.ml, builds them to bytecode with
       debugging flags, then runs them with backtraces enabled. *)
    ("test",
+    Test,
     (fun () ->
        let test_files =
          Sys.readdir "."
@@ -345,23 +375,28 @@ let rules =
 (** [rule name] runs the rule named [name] if it exists. If no such rule
     exists, we print an error is printed then [exit 1]. *)
 let rule name =
-  match List.assoc name rules with
-  | f ->
+  let rec rule' = function
+    | [] -> raise Not_found
+    | (name', _, proc) :: rs ->
+      if name' = name then proc else rule' rs
+  in
+  match rule' rules with
+  | proc ->
     printf "Rule: %s\n%!" name ;
-    f ()
+    proc ()
   | exception Not_found ->
     printf "No such rule: %s\n" name ;
     exit 1
 
-(** [rule_all ()] executes every rule except for "clean". *)
+(** [rule_all ()] executes every rule except for "clean" and "unlib". *)
 let rule_all () =
   List.iter
-    (fun (name, _) ->
-       if name = "clean" then ()
+    (fun (name, group, _) ->
+       if group = Destroy then ()
        else begin
-       rule name ;
-       print_endline ""
-    end)
+         rule name ;
+         print_endline ""
+       end)
     rules
 
 (* Here we go! *)
