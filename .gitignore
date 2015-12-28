@@ -1,0 +1,14 @@
+src/_build/*
+
+*.docdir
+*.native
+
+*.d.byte
+*.byte
+*.top
+
+*.pid
+
+.DS_Store
+
+logs/*.log

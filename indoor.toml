@@ -1,0 +1,14 @@
+title = "Indoor Wiki"
+root_name = "wiki"
+static_path = "static"
+wiki_path = "pages"
+highlight = true
+mathjax = true
+
+[[links]]
+label = "Home"
+to = "/"
+
+[[links]]
+label = "Welcome"
+to = "/Welcome.md"

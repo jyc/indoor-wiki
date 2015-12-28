@@ -1,0 +1,9 @@
+true: package(lwt), package(lwt.unix), \
+    package(scgi), package(batteries), \
+    package(re), package(xmlm), \
+    package(ppx_sexp), package(sxmlm), \
+    package(omd), package(toml), \
+    package(ppx_deriving.std), \
+    package(utop), \
+    package(magic-mime), \
+    thread, safe_string

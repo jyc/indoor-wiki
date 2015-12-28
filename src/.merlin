@@ -1,0 +1,14 @@
+S .
+B _build/
+
+PKG lwt
+PKG lwt.unix
+PKG scgi
+PKG batteries
+PKG re
+PKG xmlm
+PKG ppx_sexp
+PKG sxmlm
+PKG omd
+PKG toml
+PKG magic-mime

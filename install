@@ -1,0 +1,93 @@
+#!/bin/bash
+
+red=$(tput setaf 1)
+reset=$(tput sgr0)
+
+h1()
+{
+  echo -e "${red}$1${reset}"
+}
+
+echo `tput setaf 1`
+echo "  _______           __                     ________ __ __     __ "
+echo " |_     _|.-----.--|  |.-----.-----.----. |  |  |  |__|  |--.|__| "
+echo "  _|   |_ |     |  _  ||  _  |  _  |   _| |  |  |  |  |    < |  | "
+echo " |_______||__|__|_____||_____|_____|__|   |________|__|__|__||__| "
+echo `tput sgr0`
+echo
+echo "Welcome to the ${red}Indoor Wiki${reset} install script!"
+echo
+echo "I'll be cloning Indoor Wiki and some of its dependencies to the current" 
+echo "directory to install them."
+echo "I'm assuming you already have OCaml and OPAM installed."
+
+echo
+h1 "sxmlm"
+opam info sxmlm >/dev/null 2>&1 
+if [ $? -eq 0 ]; then
+  echo "sxmlm is already installed."
+else
+  echo "sxmlm not found: installing..."
+  hg clone ssh://hg@bitbucket.org/jyc/sxmlm
+  opam pin add --yes sxmlm sxmlm
+fi
+
+echo
+h1 "ocaml-scgi"
+if [ -z "$(ocamlfind query "scgi" 2>&1 | grep "not found")" ]; then
+  echo "ocaml-scgi is already installed."
+else
+  echo "ocaml-scgi not found: installing..."
+  git clone https://github.com/jonathanyc/ocaml-scgi
+  cd ocaml-scgi
+  make world
+  cd ..
+fi
+
+echo
+h1 "Nginx"
+which nginx >/dev/null 2>&1
+if [ $? -eq 0 ]; then
+  echo "Nginx is already installed."
+else
+  echo "Nginx not found: installing..."
+  case "$(uname)" in
+    Darwin)
+      which brew >/dev/null 2>&1 
+      if [ $? -eq 0 ]; then
+        echo "Installing Nginx using Homebrew..."
+        brew install nginx
+      else
+        echo "Sorry! I only have instructions for installing Nginx on OS X using Homebrew."
+        echo "Please install Homebrew or install Nginx by yourself, then launch me again."
+        exit 1
+      fi
+      ;;
+    Linux)
+      which pacman >/dev/null 2>&1 
+      if [ $? -eq 0 ]; then
+        echo "Installing Nginx using Pacman..."
+        sudo pacman -S --noconfirm nginx
+      else
+        echo "Sorry! I don't have instructions for installing Nginx on your platform."
+        echo "Please install Nginx yourself, then launch me again."
+      fi
+      ;;
+  esac
+fi
+
+echo
+h1 "Indoor Wiki"
+which indoor >/dev/null 2>&1 
+if [ $? -eq 0 ]; then
+  echo "Indoor Wiki seems to already be installed!"
+else
+  echo "Installing..."
+  hg clone ssh://hg@bitbucket.org/jyc/indoor-wiki
+  opam pin add --yes indoor-wiki indoor-wiki
+fi
+
+echo
+h1 "All done!"
+
+# vim: set ts=2 sw=2 :

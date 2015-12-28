@@ -1,0 +1,125 @@
+/* Global */
+
+body {
+  width: 720px;
+  margin-top: 2em;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 50px;
+  padding-right: 50px;
+
+  font-family: serif;
+}
+
+img {
+  max-width: 100%;
+}
+
+/* Page Header */
+
+header {
+  margin-bottom: 2em;
+  font-family: sans-serif;
+}
+
+#title {
+  font-weight: bold;
+  margin-right: 3em;
+}
+
+header > a {
+  font-size: 0.85em;
+  color: #00a;
+  text-decoration: none;
+  margin-right: 1em;
+}
+
+header > a:visited {
+  color: #00a;
+}
+
+/* Headings */
+
+h1 {
+  font-size: 1.5em;
+  color: #b00;
+}
+
+h2 {
+  font-size: 1.125em;
+}
+
+h3, h4, h5 {
+  font-size: 1em;
+}
+
+h4 {
+  font-weight: normal;
+  text-decoration: underline;
+  margin: 1em 0 1em 0;
+}
+
+h5 {
+  font-weight: normal;
+  font-style: italic;
+  margin: 1em 0 1em 0;
+}
+
+h1, h2, h3, h4, h5 {
+  font-family: "Helvetica", "Arial", sans-serif;
+}
+
+/* Code */
+
+code {
+  font-family: "Courier", "Courier New", monospace;
+  font-size: 0.875em;
+}
+
+/* Textareas */
+
+textarea {
+  width: 100%;
+}
+
+/* InstantClick */
+
+#instantclick-bar {
+  display: none;
+  /*background: #b00;*/
+}
+
+/* */
+
+.current-directory {
+  color: #b00;
+}
+
+.current-directory > a {
+  color: #b00;
+  text-decoration: none;
+}
+
+.current-directory > a:hover {
+  text-decoration: underline;
+}
+
+.current-directory-small {
+}
+
+.current-directory-small > a {
+}
+
+#directory-listing {
+  padding-left: 0;
+  font-size: 0.6em;
+  font-family: sans-serif;
+}
+
+#directory-listing > li > p {
+  font-size: 1rem;
+  margin: 0 0 0 0;
+  font-family: serif;
+}
+
+/* vim: set ts=2 sw=2 expandtab : */
