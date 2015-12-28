@@ -1,6 +1,7 @@
 S .
 B _build/
 
+# begin mk .merlin
 PKG lwt
 PKG lwt.unix
 PKG scgi
@@ -11,4 +12,7 @@ PKG ppx_sexp
 PKG sxmlm
 PKG omd
 PKG toml
+PKG ppx_deriving.std
+PKG utop
 PKG magic-mime
+# end
