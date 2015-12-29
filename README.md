@@ -24,6 +24,11 @@ You end up with pages that look like this:
 Indoor Wiki has a few dependencies, most of which are managed through
 [OPAM](https://opam.ocaml.org/). Some you will have to install manually.
 
+## car
+
+See the [car repository](https://github.com/jonathanyc/car).
+car is a collection of aliases for building OCaml projects.
+
 ## sxmlm
 
 Run `hg clone ssh://hg@bitbucket.org/jyc/sxmlm`.

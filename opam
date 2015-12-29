@@ -8,7 +8,7 @@ bug-reports: "https://bitbucket.org/jyc/indoor-wiki/issues"
 license: "BSD 2-Clause"
 dev-repo: "https://bitbucket.org/jyc/indoor-wiki"
 build: [
-  ["./mk" "prod"]
+  ["car" "opt"]
 ]
 depends: [
   (* Follow the order in _tags. *)
