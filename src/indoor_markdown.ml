@@ -14,7 +14,7 @@ let escape s =
   BatUTF8.iter
     (fun c ->
        if BatUChar.(eq c lt) then adds "&lt;"
-       else if BatUChar.(eq c gt) then adds "&lt;"
+       else if BatUChar.(eq c gt) then adds "&gt;"
        else BatUTF8.Buf.add_char out c)
     s ;
   BatUTF8.Buf.contents out

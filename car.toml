@@ -1,0 +1,17 @@
+project = "indoor_wiki"
+package = "indoor-wiki"
+requires = [
+    "lwt",
+    "lwt.unix",
+    "scgi",
+    "batteries",
+    "re",
+    "xmlm",
+    "ppx_sexp",
+    "sxmlm",
+    "omd",
+    "toml",
+    "ppx_deriving.std",
+    "utop",
+    "magic-mime"
+]
