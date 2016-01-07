@@ -1,17 +1,26 @@
-let nginx_conf ~pid_file ~error_log ~nginx_port ~scgi_port = 
+let nginx_conf ~pid_file ~error_log ~nginx_port ~scgi_port ~tmp = 
   Printf.sprintf
-    {|pid %s;
-error_log %s info;
+    "pid "^pid_file^";
+error_log "^error_log^" info;
 
 events {
-	worker_connections 1024;
+  worker_connections 1024;
 }
 
 http {
-	server {
-		listen %s;
+  server {
+    listen "^nginx_port^";
+    access_log off;
+    # Aagh! See https://github.com/JuliaLang/julia/issues/2135 .
+    # To find out which of these we have to override, a good resource is Arch's
+    # nginx pkgbuild, or Homebrew's nginx package.
+    client_body_temp_path "^tmp^";
+    fastcgi_temp_path "^tmp^";
+    scgi_temp_path "^tmp^";
+    uwsgi_temp_path "^tmp^";
+    proxy_temp_path "^tmp^";
 
-		location / {
+    location / {
        # From the nginx distribution.
        scgi_param  REQUEST_METHOD     $request_method;
        scgi_param  REQUEST_URI        $request_uri;
@@ -29,8 +38,7 @@ http {
        scgi_param  SERVER_PORT        $server_port;
        scgi_param  SERVER_NAME        $server_name;
 
-       scgi_pass localhost:%s;
-		}
+       scgi_pass localhost:"^scgi_port^";
+    }
   }
-}|}
-    pid_file error_log nginx_port scgi_port
+}"

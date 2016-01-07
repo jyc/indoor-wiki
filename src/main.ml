@@ -223,16 +223,21 @@ let () =
 
       (* Create temporary files to store the Nginx config, PID file, and error
          log. *)
-      let conf_file = command "mktemp -t conf" |> String.trim in
-      let pid_file = command "mktemp -t pid" |> String.trim in
-      let error_log = command "mktemp -t error" |> String.trim in
+      let conf_file = command "mktemp -t conf.XXX" |> String.trim in
+      let pid_file = command "mktemp -t pid.XXX" |> String.trim in
+      let error_log = command "mktemp -t error.XXX" |> String.trim in
+
+      let tmp = command "mktemp -d -t tmp.XXX" |> String.trim in
 
       (* Generate and save an Nginx config that will reverse proxy this Indoor
          Wiki instance. *)
-      let conf = Indoor_bake.nginx_conf ~pid_file ~error_log ~nginx_port ~scgi_port in
+      let conf =
+        Indoor_bake.nginx_conf
+          ~pid_file ~error_log ~nginx_port ~scgi_port ~tmp
+      in
       let () = write_to_file conf_file conf in
 
-      let nginx_cmd = Printf.sprintf "nginx -c'%s' -p." conf_file in
+      let nginx_cmd = Printf.sprintf "nginx -c '%s' -p ." conf_file in
       let ch = Unix.open_process_in nginx_cmd in
       Some (ch,
             fun () ->
@@ -240,6 +245,7 @@ let () =
               ignore (command (nginx_cmd ^ " -s stop")) ;
               assert_normal_exit "nginx" (Unix.close_process_in ch) ;
               (* The PID file is deleted by Nginx. *)
+              ignore @@ command @@ "rm -rf " ^ tmp;
               rm conf_file ;
               rm error_log)
     end
