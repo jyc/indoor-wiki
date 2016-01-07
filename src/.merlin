@@ -10,7 +10,6 @@ PKG re
 PKG xmlm
 PKG ppx_sexp
 PKG sxmlm
-PKG omd
 PKG toml
 PKG ppx_deriving.std
 PKG utop

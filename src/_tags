@@ -1,5 +1,5 @@
 true: thread, safe_string
 
 # begin mk _tags
-true: package(lwt), package(lwt.unix), package(scgi), package(batteries), package(re), package(xmlm), package(ppx_sexp), package(sxmlm), package(omd), package(toml), package(ppx_deriving.std), package(utop), package(magic-mime), package(cmark)
+true: package(lwt), package(lwt.unix), package(scgi), package(batteries), package(re), package(xmlm), package(ppx_sexp), package(sxmlm), package(toml), package(ppx_deriving.std), package(utop), package(magic-mime), package(cmark)
 # end
