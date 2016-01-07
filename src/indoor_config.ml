@@ -23,32 +23,29 @@ type t = {
 }
 
 let load path =
-  let table = Toml.Parser.from_filename path in
-  let load_named f name table =
-    match f name table with
-    | x -> x
-    | exception Not_found ->
-      failwith (Printf.sprintf "Couldn't find '%s'." name)
+  let data = Toml.Parser.(unsafe @@ from_filename path) in
+  let must name = function
+    | None -> failwith @@ Printf.sprintf "Couldn't find '%s'." name
+    | Some x -> x
   in
-  let load_string = load_named (Toml.get_string & Toml.key) in
-  let load_bool = load_named (Toml.get_bool & Toml.key) in
-  let load_links table =
-    let load_link table =
-      load_string "label" table,
-      load_string "to" table
-    in
-    Toml.Table.find (Toml.key "links") table
-    |> Toml.to_table_array
-    |> List.map load_link
+  let load f name = must name TomlLenses.(get data (key name |-- f)) in
+  let load_string = load TomlLenses.string in
+  let load_bool = load TomlLenses.bool in
+  let links =
+    TomlLenses.(get data (key "links" |-- array |-- tables))
+    |> must "links"
+    |> List.map (fun link ->
+        assert_opt @@ TomlLenses.(get link (key "label" |-- string)),
+        assert_opt @@ TomlLenses.(get link (key "to" |-- string)))
   in
   try
-    { title = table |> load_string "title";
-      root_name = table |> load_string "root_name";
-      static_path = table |> load_string "static_path" |> Indoor_path.of_string |> assert_opt;
-      wiki_path = table |> load_string "wiki_path" |> Indoor_path.of_string |> assert_opt;
-      highlight = table |> load_bool "highlight";
-      mathjax = table |> load_bool "mathjax";
-      links = table |> load_links }
+    { title = load_string "title";
+      root_name = load_string "root_name";
+      static_path = load_string "static_path" |> Indoor_path.of_string |> assert_opt;
+      wiki_path = load_string "wiki_path" |> Indoor_path.of_string |> assert_opt;
+      highlight = load_bool "highlight";
+      mathjax = load_bool "mathjax";
+      links }
   with e ->
     Printf.fprintf stderr "indoor: Error while loading configuration file: %s\n" (Printexc.to_string e);
     exit 1
