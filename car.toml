@@ -15,3 +15,4 @@ requires = [
     "utop",
     "magic-mime"
 ]
+flags = []
