@@ -30,3 +30,21 @@ to = "/"
 label = "Welcome"
 to = "/Welcome.md"
 ```
+
+# HTML Escaping
+
+<b>Warning! HTML is not escaped.</b>
+
+In `src/indoor_markdown.ml`, you can replace:
+
+```ocaml
+return @@ Cmark.to_html md
+```
+
+with
+
+```ocaml
+return @@ Cmark.to_html ~flags:[`Safe] md
+```
+
+to disallow raw HTML.

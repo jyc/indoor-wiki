@@ -1,6 +1,7 @@
 #!/bin/bash
 
 red=$(tput setaf 1)
+green=$(tput setaf 2)
 reset=$(tput sgr0)
 
 h1()
@@ -19,7 +20,15 @@ echo "Welcome to the ${red}Indoor Wiki${reset} install script!"
 echo
 echo "I'll be cloning Indoor Wiki and some of its dependencies to the current" 
 echo "directory to install them."
-echo "I'm assuming you already have OCaml and OPAM installed."
+echo
+echo "I'm assuming you ${green}already have OCaml and OPAM${reset} installed."
+echo
+echo "I recommend running this script in a ${green}directory that's not temporary${reset} so that"
+echo "you don't confuse OPAM about where the projects you've installed have gone."
+echo
+echo "Press ${green}ENTER${reset} if you're ready to start."
+read _
+exit 1
 
 echo
 h1 "sxmlm"
@@ -71,9 +80,49 @@ else
       else
         echo "Sorry! I don't have instructions for installing Nginx on your platform."
         echo "Please install Nginx yourself, then launch me again."
+        exit 1
       fi
       ;;
+    *)
+      echo "Sorry! I don't have instructions for installing Nginx on your platform."
+      echo "Please install Nginx yourself, then launch me again."
+      exit 1
+      ;;
   esac
+fi
+
+echo
+h1 "ocaml-cmark"
+opam info cmark >/dev/null 2>&1 
+if [ $? -eq 0 ]; then
+  echo "ocaml-cmark is already installed."
+else
+  echo "ocaml-cmark not found: installing..."
+  pkg-config libcmark
+  if [ $? -eq 0 ]; then
+    echo "cmark not found: installing..."
+    case "$(uname)" in
+      Darwin)
+        which brew >/dev/null 2>&1 
+        if [ $? -eq 0 ]; then
+          echo "Installing cmark using Homebrew..."
+          brew install cmark
+        else
+          echo "Sorry! I only have instructions for installing cmark on OS X using Homebrew."
+          echo "Please install Homebrew or install cmark by yourself, then launch me again."
+          exit 1
+        fi
+        ;;
+      *)
+        echo "Sorry! I don't have instructions for installing cmark on your platform."
+        echo "Please install cmark yourself, then launch me again."
+        echo "See https://github.com/jgm/cmark ."
+        exit 1
+        ;;
+    esac
+  fi
+  git clone https://github.com/jonathanyc/ocaml-cmark.git
+  opam pin add --yes cmark ocaml-mark
 fi
 
 echo

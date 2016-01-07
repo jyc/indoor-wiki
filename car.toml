@@ -9,10 +9,10 @@ requires = [
     "xmlm",
     "ppx_sexp",
     "sxmlm",
-    "omd",
     "toml",
     "ppx_deriving.std",
     "utop",
-    "magic-mime"
+    "magic-mime",
+    "cmark"
 ]
 flags = []

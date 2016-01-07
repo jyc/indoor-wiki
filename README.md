@@ -9,7 +9,7 @@ _that_ far off.
 It's written as a demo for [ppx_sexp](https://bitbucket.org/jyc/ppx_sexp),
 [sxmlm](https://bitbucket.org/jyc/sxmlm),
 [ocaml-scgi](https://github.com/esperco/ocaml-scgi),
-[omd](https://github.com/ocaml/omd), and OCaml as a platform for web
+and OCaml as a platform for web
 development.
 It's also using it to experiment with how I think OCaml projects should be in
 terms of style, organization, and infrastructure (e.g. the `mk` script).
@@ -24,28 +24,20 @@ You end up with pages that look like this:
 Indoor Wiki has a few dependencies, most of which are managed through
 [OPAM](https://opam.ocaml.org/). Some you will have to install manually.
 
-## omd
-
-You can install omd from OPAM.
-However, there is a bug regarding how header text is turned into IDs.
-I have fixed this bug in a [fork](https://github.com/jonathanyc/omd).
-In the meantime you can install my fork:
-
-    git clone https://github.com/jonathanyc/omd
-    opam pin add omd omd
-
-It's fine if you use upstream, though &mdash; the bug isn't critical.
-See the pull request [here](https://github.com/ocaml/omd/pull/153).
-
 ## car
 
 See the [car repository](https://github.com/jonathanyc/car).
 car is a collection of aliases for building OCaml projects.
 
+## ocaml-cmark
+
+Run `hg clone https://github.com/jonathanyc/ocaml-cmark.git`
+Then `opam pin add ocaml-cmark`
+
 ## sxmlm
 
 Run `hg clone ssh://hg@bitbucket.org/jyc/sxmlm`.
-Then `opam pin add sxmlm sxmlm`
+Then `opam pin add sxmlm`
 
 ## nginx
 

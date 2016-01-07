@@ -20,9 +20,9 @@ depends: [
   "xmlm" {>= "1.2.0"}
   "ppx_sexp" {>= "0.3.0"}
   "sxmlm" {>= "0.2.1"}
-  "omd" {>= "1.2.6"}
   "toml" {>= "4.0.0" & < "5.0.0"}
   "ppx_deriving" {>= "2.2"}
   (* UTop is only needed for ./mk top . *)
   "magic-mime" {>= "1.0.0"}
+  "cmark" {>= "0.1.1"}
 ]
