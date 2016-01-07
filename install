@@ -28,17 +28,29 @@ echo "you don't confuse OPAM about where the projects you've installed have gone
 echo
 echo "Press ${green}ENTER${reset} if you're ready to start."
 read _
-exit 1
+
+echo
+h1 "car"
+which car >/dev/null 2>&1
+if [ $? -eq 0 ]; then
+  echo "car is already installed."
+else
+  echo "car not found: installing..."
+  git clone https://github.com/jonathanyc/car.git
+  opam pin add --yes car car
+  if [ $? -ne 0 ]; then exit 1; fi
+fi
 
 echo
 h1 "sxmlm"
-opam info sxmlm >/dev/null 2>&1 
+ocamlfind query sxmlm >/dev/null 2>&1
 if [ $? -eq 0 ]; then
   echo "sxmlm is already installed."
 else
   echo "sxmlm not found: installing..."
   hg clone ssh://hg@bitbucket.org/jyc/sxmlm
   opam pin add --yes sxmlm sxmlm
+  if [ $? -ne 0 ]; then exit 1; fi
 fi
 
 echo
@@ -50,6 +62,7 @@ else
   git clone https://github.com/jonathanyc/ocaml-scgi
   cd ocaml-scgi
   make world
+  if [ $? -ne 0 ]; then exit 1; fi
   cd ..
 fi
 
@@ -62,10 +75,11 @@ else
   echo "Nginx not found: installing..."
   case "$(uname)" in
     Darwin)
-      which brew >/dev/null 2>&1 
+      which brew >/dev/null 2>&1
       if [ $? -eq 0 ]; then
         echo "Installing Nginx using Homebrew..."
         brew install nginx
+        if [ $? -ne 0 ]; then exit 1; fi
       else
         echo "Sorry! I only have instructions for installing Nginx on OS X using Homebrew."
         echo "Please install Homebrew or install Nginx by yourself, then launch me again."
@@ -77,6 +91,7 @@ else
       if [ $? -eq 0 ]; then
         echo "Installing Nginx using Pacman..."
         sudo pacman -S --noconfirm nginx
+        if [ $? -ne 0 ]; then exit 1; fi
       else
         echo "Sorry! I don't have instructions for installing Nginx on your platform."
         echo "Please install Nginx yourself, then launch me again."
@@ -93,20 +108,21 @@ fi
 
 echo
 h1 "ocaml-cmark"
-opam info cmark >/dev/null 2>&1 
+ocamlfind query cmark >/dev/null 2>&1
 if [ $? -eq 0 ]; then
   echo "ocaml-cmark is already installed."
 else
   echo "ocaml-cmark not found: installing..."
-  pkg-config libcmark
-  if [ $? -eq 0 ]; then
+  pkg-config libcmark >/dev/null 2>&1 
+  if [ $? -ne 0 ]; then
     echo "cmark not found: installing..."
     case "$(uname)" in
       Darwin)
-        which brew >/dev/null 2>&1 
+        which brew 2>&1 >/dev/null 
         if [ $? -eq 0 ]; then
           echo "Installing cmark using Homebrew..."
           brew install cmark
+          if [ $? -ne 0 ]; then exit 1; fi
         else
           echo "Sorry! I only have instructions for installing cmark on OS X using Homebrew."
           echo "Please install Homebrew or install cmark by yourself, then launch me again."
@@ -123,17 +139,19 @@ else
   fi
   git clone https://github.com/jonathanyc/ocaml-cmark.git
   opam pin add --yes cmark ocaml-cmark
+  if [ $? -ne 0 ]; then exit 1; fi
 fi
 
 echo
 h1 "Indoor Wiki"
-which indoor >/dev/null 2>&1 
+which indoor >/dev/null 2>&1
 if [ $? -eq 0 ]; then
   echo "Indoor Wiki seems to already be installed!"
 else
   echo "Installing..."
-  hg clone https://github.com/jonathanyc/indoor-wiki.git
+  git clone https://github.com/jonathanyc/indoor-wiki.git
   opam pin add --yes indoor-wiki indoor-wiki
+  if [ $? -ne 0 ]; then exit 1; fi
 fi
 
 echo
