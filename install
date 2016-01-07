@@ -122,7 +122,7 @@ else
     esac
   fi
   git clone https://github.com/jonathanyc/ocaml-cmark.git
-  opam pin add --yes cmark ocaml-mark
+  opam pin add --yes cmark ocaml-cmark
 fi
 
 echo
@@ -132,7 +132,7 @@ if [ $? -eq 0 ]; then
   echo "Indoor Wiki seems to already be installed!"
 else
   echo "Installing..."
-  hg clone ssh://hg@bitbucket.org/jyc/indoor-wiki
+  hg clone https://github.com/jonathanyc/indoor-wiki.git
   opam pin add --yes indoor-wiki indoor-wiki
 fi
 
