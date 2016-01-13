@@ -48,7 +48,7 @@ if [ $? -eq 0 ]; then
   echo "sxmlm is already installed."
 else
   echo "sxmlm not found: installing..."
-  hg clone ssh://hg@bitbucket.org/jyc/sxmlm
+  hg clone https://jyc@bitbucket.org/jyc/sxmlm
   opam pin add --yes sxmlm sxmlm
   if [ $? -ne 0 ]; then exit 1; fi
 fi
