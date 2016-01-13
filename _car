@@ -1,3 +1,4 @@
+# a comment
 project = "indoor_wiki"
 package = "indoor-wiki"
 requires = [
