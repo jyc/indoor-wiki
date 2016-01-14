@@ -4,7 +4,7 @@ let nginx_conf ~pid_file ~error_log ~nginx_port ~scgi_port ~tmp =
 error_log "^error_log^" info;
 
 events {
-  worker_connections 1024;
+  worker_connections 256;
 }
 
 http {
