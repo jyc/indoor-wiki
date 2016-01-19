@@ -5,15 +5,25 @@ open Indoor_util
 let csp_report_path = "csp_report"
 let output_csp_reports = ref false
 
-let return_html status body =
+let base_csp_header =
+  Printf.sprintf "report-uri /%s; default-src 'self'; script-src 'self'" csp_report_path
+
+let mathjax_csp_header =
+  Printf.sprintf
+    "report-uri /%s; default-src 'self'; script-src 'self' %s; \
+     style-src 'self' 'unsafe-inline'; font-src 'self' %s"
+    csp_report_path Indoor_config.mathjax_host Indoor_config.mathjax_host
+
+let csp_header () =
   let { Indoor_config.mathjax } = get_key_exn Indoor_config.key in
+  if not mathjax then base_csp_header
+  else mathjax_csp_header
+
+let return_html status body =
   let headers = 
     [`Content_type "text/html; charset utf-8";
      (* The presence of inline source elements is disabled by the presence of the CSP header. *)
-     `Other ("Content-Security-Policy",
-             Printf.sprintf "default-src 'self'; report-uri /%s; script-src 'self'%s"
-               csp_report_path
-               (if mathjax then " " ^ Indoor_config.mathjax_host ^ "; style-src 'self' 'unsafe-inline'" else ""))]
+     `Other ("Content-Security-Policy", csp_header ())]
   in
   return { Scgi.Response.
            status;
@@ -125,11 +135,16 @@ let handle { Indoor_config.title; static_path; wiki_path } req =
       | _ -> not_found ()
     end
 
+(* [cleanup_nginx] is set to a function that cleans up the embedded Nginx
+   server if used. *)
+let cleanup_nginx = ref (fun () -> ())
+
 let rec serve config port =
   let callback req =
     Lwt.catch
       (fun () ->
-         Lwt.with_value Indoor_config.key (Some config) (fun () -> handle config req))
+         Lwt.with_value Indoor_config.key (Some config)
+           (fun () -> handle config req))
       (fun e ->
          let () = begin
            Printf.fprintf stderr "Handler error: %s\n%!" (Printexc.to_string e) ;
@@ -142,9 +157,11 @@ let rec serve config port =
   with
   | Unix.Unix_error(Unix.EADDRINUSE, _, _) ->
     Printf.fprintf stderr "indoor-wiki: %d is already in use. Shutting down...\n%!" port ;
+    !cleanup_nginx () ;
     exit 1
   | Unix.Unix_error(Unix.EACCES, "bind", _) ->
     Printf.fprintf stderr "indoor-wiki: You don't have access to port %d. Shutting down...\n%!" port ;
+    !cleanup_nginx () ;
     exit 1
   | Unix.Unix_error _ as e ->
     Printf.fprintf stderr "Server error: %s\n%!" (Printexc.to_string e) ;
@@ -212,45 +229,6 @@ let () =
   let config = Indoor_config.load !config_path in
   Indoor_config.check config ;
 
-  (* Launch an 'embedded' Nginx server if [embed] is true. *)
-  let nginx =
-    if not !embed then None
-    else begin
-      (* Move ourselves to [port]+1. *)
-      let nginx_port = string_of_int !port in
-      let () = port := !port + 1 in
-      let scgi_port = string_of_int !port in
-
-      (* Create temporary files to store the Nginx config, PID file, and error
-         log. *)
-      let conf_file = command "mktemp -t conf.XXX" |> String.trim in
-      let pid_file = command "mktemp -t pid.XXX" |> String.trim in
-      let error_log = command "mktemp -t error.XXX" |> String.trim in
-
-      let tmp = command "mktemp -d -t tmp.XXX" |> String.trim in
-
-      (* Generate and save an Nginx config that will reverse proxy this Indoor
-         Wiki instance. *)
-      let conf =
-        Indoor_bake.nginx_conf
-          ~pid_file ~error_log ~nginx_port ~scgi_port ~tmp
-      in
-      let () = write_to_file conf_file conf in
-
-      let nginx_cmd = Printf.sprintf "nginx -c '%s' -p ." conf_file in
-      let ch = Unix.open_process_in nginx_cmd in
-      Some (ch,
-            fun () ->
-              let rm s = ignore (command (Printf.sprintf "rm '%s'" s)) in
-              ignore (command (nginx_cmd ^ " -s stop")) ;
-              assert_normal_exit "nginx" (Unix.close_process_in ch) ;
-              (* The PID file is deleted by Nginx. *)
-              ignore @@ command @@ "rm -rf " ^ tmp;
-              rm conf_file ;
-              rm error_log)
-    end
-  in
-
   (* Avoid closing when the connection drops unexpectedly. This should be
      handled by the code doing the reads/writes. *)
   Sys.(set_signal sigpipe Signal_ignore) ;
@@ -259,27 +237,87 @@ let () =
      threads are in use. *)
   Lwt_engine.set ~transfer:true ~destroy:true (new Lwt_engine.libev) ;
 
+  if not !embed then ()
+  else begin
+    port := !port + 1
+  end ;
+
   (* Start the server.
      [server] is a handle that lets us shut it down. *)
-  let server = serve config (!port) in
+  let server = serve config !port in
+
+  (* Launch an 'embedded' Nginx server if [embed] is true. *)
+  if not !embed then ()
+  else begin
+    (* Hack to be a little cautious about starting the embedded Nginx until we
+       at least know from the SCGI server not exiting us that [port]+1 is
+       available (meaning hopefully that there isn't another Indoor Wiki's
+       Nginx on [port]). Unfortunately there doesn't seem to be an easy way to
+       kill failed Nginx worker processes, because Nginx refuses to create a
+       PID file then. *)
+    Thread.delay 0.25 ;
+
+    let nginx_port = string_of_int (!port - 1) in
+    let scgi_port = string_of_int !port in
+
+    (* Create temporary files to store the Nginx config, PID file, and error
+       log. *)
+    let conf_file = command "mktemp /tmp/conf.XXX" |> String.trim in
+    let pid_file = command "mktemp /tmp/pid.XXX" |> String.trim in
+    let error_log = command "mktemp /tmp/error.XXX" |> String.trim in
+
+    let tmp = command "mktemp -d /tmp/tmp.XXX" |> String.trim in
+
+    (* Generate and save an Nginx config that will reverse proxy this Indoor
+       Wiki instance. *)
+    let conf =
+      Indoor_bake.nginx_conf
+        ~pid_file ~error_log ~nginx_port ~scgi_port ~tmp
+    in
+    let () = write_to_file conf_file conf in
+
+    let nginx_cmd = Printf.sprintf "nginx -c '%s' -p ." conf_file in
+    let ch = Unix.open_process_in nginx_cmd in
+
+    cleanup_nginx := 
+      fun () ->
+        let rm s = ignore (command (Printf.sprintf "rm -f '%s'" s)) in
+        let act = ignore & command in
+        let started =
+          let inch = open_in pid_file in
+          match input_char inch with
+          | _ -> true
+          | exception End_of_file -> false
+        in
+        if started then begin
+          act @@ nginx_cmd ^ " -s stop" ;
+          assert_normal_exit "nginx" (Unix.close_process_in ch) ;
+          act @@ "rm -rf " ^ tmp;
+          rm conf_file ;
+          rm error_log
+        end else begin
+          Printf.fprintf stderr
+            "\x1b[31mOops, it looks like the port I tried to launch Nginx on was unavailable.\n\
+             Unfortunately there's not much I'm able to do safely about the failed worker\n\
+             processes.\n\
+             You can find out their PIDs using `pid aux | grep nginx` and then kill them.\x1b[0m" ;
+          ignore @@ Unix.close_process_in ch ;
+        end
+  end ;
 
   (* [shutdown_waiter] will be wakened when we want to finally exit the
      program. *)
   let shutdown_waiter, shutdown_wakener = Lwt.wait () in
 
-  (* SIGINT/SIGTERM handler. Make sure we shut down everything cleanly. *)
+  (* Shutdown signal handler.. Make sure we shut down everything cleanly. *)
   let shutdown _ =
-    match nginx with
-    | None -> ()
-    | Some (ch, cleanup) ->
-      print_endline "Received signal, shutting down..." ;
-      cleanup () ;
-      Lwt_io.shutdown_server server ;
-      Lwt.wakeup shutdown_wakener ()
+    print_endline "Received signal, shutting down..." ;
+    !cleanup_nginx () ;
+    Lwt_io.shutdown_server server ;
+    Lwt.wakeup shutdown_wakener ()
   in
   Sys.(set_signal sigint (Signal_handle shutdown)) ;
   Sys.(set_signal sigterm (Signal_handle shutdown)) ;
-
 
   (* Here we go! *)
   Lwt_main.run shutdown_waiter
