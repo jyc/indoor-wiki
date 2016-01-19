@@ -1,5 +1,6 @@
 S .
 B _build/
+B +threads
 
 # begin mk .merlin
 PKG lwt
