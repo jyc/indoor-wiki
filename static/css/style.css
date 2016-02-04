@@ -82,6 +82,15 @@ textarea {
   width: 100%;
 }
 
+/* Semantic spans */
+
+span.error {
+  padding: 0.25em;
+  background-color: red;
+  color: white;
+  font-weight: bold;
+}
+
 /* InstantClick */
 
 #instantclick-bar {

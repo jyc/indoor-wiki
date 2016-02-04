@@ -48,3 +48,21 @@ return @@ Cmark.to_html ~flags:[`Safe] md
 ```
 
 to disallow raw HTML.
+
+# Embedding
+
+You can embed files in other files with the *\[%embed path]* syntax.
+Indoor Wiki will preprocess your Markdown files and replace occurrences of the embedding syntax with the contents of the file they refer to.
+`path` is interpreted relative to the `static_dir`.
+
+For example, here's this page's stylesheet:
+
+```css
+[%embed css/style.css]
+```
+
+If you specify a non-existent file (or a file outside `static_path`), an error message is displayed:
+
+[%embed does/not/exist]
+
+If you want to embed files outside of your `static_dir`, you can use symbolic links.

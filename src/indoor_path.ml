@@ -95,3 +95,9 @@ let relative root path =
     | _ :: _, _ ->
       None
   in loop root.parts path.parts
+
+let exists { path } =
+  Sys.file_exists path
+
+let is_directory { path } =
+  Sys.is_directory path

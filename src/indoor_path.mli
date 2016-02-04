@@ -55,3 +55,7 @@ val relative : t -> t -> t option
 
 val pp : Format.formatter -> t -> unit
 val show : t -> string
+
+(* Wrappers *)
+val exists : t -> bool
+val is_directory : t -> bool
