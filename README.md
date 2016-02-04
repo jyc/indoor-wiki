@@ -12,7 +12,7 @@ It's written as a demo for [ppx_sexp](https://bitbucket.org/jyc/ppx_sexp),
 and OCaml as a platform for web
 development.
 It's also using it to experiment with how I think OCaml projects should be in
-terms of style, organization, and infrastructure (e.g. the `mk` script).
+terms of style, organization, and infrastructure (e.g. the `car` script).
 
 You end up with pages that look like this:
 
@@ -31,7 +31,7 @@ car is a collection of aliases for building OCaml projects.
 
 ## ocaml-cmark
 
-Run `hg clone https://github.com/jonathanyc/ocaml-cmark.git`
+Run `git clone https://github.com/jonathanyc/ocaml-cmark.git`
 Then `opam pin add ocaml-cmark`
 
 ## sxmlm
@@ -53,6 +53,8 @@ I had some problems building `ocaml-scgi` at the time of writing, for which I
 made a pull request. If you have problems you can try my fork, and do `git
 clone https://github.com/jonathanyc/ocaml-scgi` instead.  The only change is to
 the `myocamlbuild.ml`.
+
+`ocaml-scgi` requires `batteries` and `uri`.
 
 # Building and installing
 
