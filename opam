@@ -11,12 +11,13 @@ build: [
   ["car" "opt"]
 ]
 depends: [
-  (* Follow the order in _tags. *)
-  "car" {build >= "1.0.0" & < "2.0.0"}
+  (* Follow the order in _car. *)
+  "car" {build >= "2.0.0" & < "3.0.0"}
   "ocamlfind" {build}
   "lwt" {>= "2.5.0"}
   "batteries" {>= "2.3.1"}
   "re" {>= "1.4.1"}
+  "pcre" {>= "7.1.6"}
   "xmlm" {>= "1.2.0"}
   "ppx_sexp" {>= "0.3.0"}
   "sxmlm" {>= "0.2.1"}

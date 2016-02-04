@@ -6,6 +6,7 @@ requires = [
     "scgi",
     "batteries",
     "re",
+    "pcre",
     "xmlm",
     "ppx_sexp",
     "sxmlm",
@@ -13,6 +14,6 @@ requires = [
     "ppx_deriving.std",
     "utop",
     "magic-mime",
-    "cmark"
+    "cmark",
 ]
 flags = []

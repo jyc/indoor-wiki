@@ -3,17 +3,20 @@ B _build/
 B +threads
 
 # begin mk .merlin
-PKG lwt
-PKG lwt.unix
-PKG scgi
-PKG batteries
-PKG re
-PKG xmlm
-PKG ppx_sexp
-PKG sxmlm
-PKG toml
-PKG ppx_deriving.std
-PKG utop
-PKG magic-mime
+S .
+B _build
 PKG cmark
+PKG magic-mime
+PKG utop
+PKG ppx_deriving.std
+PKG toml
+PKG sxmlm
+PKG ppx_sexp
+PKG xmlm
+PKG pcre
+PKG re
+PKG batteries
+PKG scgi
+PKG lwt.unix
+PKG lwt
 # end

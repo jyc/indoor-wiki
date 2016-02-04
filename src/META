@@ -1,5 +1,5 @@
 # begin mk META
-requires = "lwt lwt.unix scgi batteries re xmlm ppx_sexp sxmlm toml ppx_deriving.std utop magic-mime cmark"
+requires = "cmark magic-mime utop ppx_deriving.std toml sxmlm ppx_sexp xmlm pcre re batteries scgi lwt.unix lwt"
 archive(byte) = "indoor_wiki.cma"
 archive(native) = "indoor_wiki.cmxa"
 # end
