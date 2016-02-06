@@ -91,7 +91,6 @@ let handle { Indoor_config.title; static_path; wiki_path } req =
   | None -> not_found ()
   | Some path ->
     let parts = Indoor_path.parts path in
-    let () = print_endline @@ Indoor_path.show path in
     begin match meth, parts with
       (* Accessing / . *)
       | `GET, [] ->
