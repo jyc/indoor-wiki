@@ -4,10 +4,10 @@
 "   set secure
 
 hi PpxSexpGroup ctermfg=Green
-call matchadd('PpxSexpGroup', '%sexp')
-call matchadd('PpxSexpGroup', '%sfxp')
-call matchadd('PpxSexpGroup', '%sp')
-call matchadd('PpxSexpGroup', '%spls')
+au BufRead,BufNewFile *.ml call matchadd('PpxSexpGroup', '%sexp')
+au BufRead,BufNewFile *.ml call matchadd('PpxSexpGroup', '%sfxp')
+au BufRead,BufNewFile *.ml call matchadd('PpxSexpGroup', '%sp')
+au BufRead,BufNewFile *.ml call matchadd('PpxSexpGroup', '%spls')
 
 hi RawDangerGroup ctermfg=Red
-call matchadd('RawDangerGroup', 'RAW')
+au BufRead,BufNewFile *.ml call matchadd('RawDangerGroup', 'RAW')
