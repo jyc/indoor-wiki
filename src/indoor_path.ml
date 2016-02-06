@@ -12,7 +12,7 @@ type t = {
 
 exception Path_exn of string
 
-let cwd = { path = "."; parts = ["."]; basename = "." }
+let cwd = { path = "."; parts = []; basename = "" }
 
 let slash_re =
   Re.(compile (char '/'))

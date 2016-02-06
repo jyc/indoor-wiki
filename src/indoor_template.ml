@@ -70,24 +70,24 @@ let breadcrumbs ~content crumbs =
   |> List.rev
   |> intersperse ~tail:true [%sexp "/"]
 
-let index ~title ~dt ~dirs ~files () = 
+let index ~title ~dt ~files ~root () = 
   let render_file i file =
     let i = i + 1 in
     let id = Printf.sprintf "directory-entry-%d" i in
     let href, text =
       match file with
       | Indoor_fs.Directory (d, _) ->
-        Indoor_path.to_string d ^ "/",
-        Indoor_path.basename d ^ "/"
+        Indoor_path.(!$ (root / d) ^ "/"),
+        Indoor_path.(!$ d ^ "/")
       | Indoor_fs.File path -> 
-        Indoor_path.to_string path,
-        Indoor_path.basename path
+        Indoor_path.(!$ (root / path)),
+        Indoor_path.(!$ path)
     in [%sexp (li (p (a ((@) (href [%string "/" ^ href]) (id [%string id])) [%string text])))]
   in
   [%sfxp
     '\'', 
     (h1 ((@) (class' "current-directory"))
-       [%spls breadcrumbs ~content:false dirs]) 
+       [%spls breadcrumbs ~content:false Indoor_path.(parts root)]) 
     [%sp
        if files <> [] then 
          [%sexp

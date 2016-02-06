@@ -39,4 +39,15 @@ let () =
        let abcd = assert_opt @@ of_string "a/b/c/d" in
 
        assert (relative abc abb = None) ;
-       assert (relative abc abcd = of_string "d"))
+       assert (relative abc abcd = of_string "d")) ;
+
+  test "CWD: properties"
+    (fun () ->
+       let cwd' = assert_opt @@ of_string "" in
+       assert (cwd' = cwd) ;
+       assert (cwd' / cwd = cwd) ;
+       assert (parts cwd' = []) ;
+       assert (basename cwd' = "") ;
+       assert (to_string cwd' = ".")) ;
+
+  ()

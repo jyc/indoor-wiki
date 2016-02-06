@@ -72,17 +72,17 @@ let handle { Indoor_config.title; static_path; wiki_path } req =
   let render_index ~(where:[`Root | `Indoor_path of Indoor_path.t]) =
     let parts, root =
       match where with
-      | `Root -> [], wiki_path
-      | `Indoor_path p -> Indoor_path.parts p, Indoor_path.(wiki_path / p)
+      | `Root -> [], Indoor_path.cwd
+      | `Indoor_path p -> Indoor_path.parts p, p
     in
     let files =
       Indoor_fs.tree
         ~depth:1 ~pred:((has_suffix ".md") & Indoor_path.to_string)
-        root
+        Indoor_path.(wiki_path / root)
     in
     Indoor_template.index
-      ~dt:(Sys.time () -. ts) ~dirs:parts
-      ~files ~title:(if where = `Root then title else Indoor_path.(!$ root)) ()
+      ~dt:(Sys.time () -. ts) ~root ~files
+      ~title:(if where = `Root then title else Indoor_path.(!$ root)) ()
     |> html_of_sxml
     |> return_html `Ok
   in
@@ -91,9 +91,10 @@ let handle { Indoor_config.title; static_path; wiki_path } req =
   | None -> not_found ()
   | Some path ->
     let parts = Indoor_path.parts path in
+    let () = print_endline @@ Indoor_path.show path in
     begin match meth, parts with
       (* Accessing / . *)
-      | `GET, ["."] ->
+      | `GET, [] ->
         render_index ~where:`Root
       (* Accessing static files /_/... . *)
       | `GET, _ when Indoor_path.inside Indoor_config.static_access_path path ->
